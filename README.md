@@ -1,6 +1,48 @@
+ComfyUI Playground 
+-------
+
+### Plug-in
+- [ComfyUI manager](https://github.com/ltdrdata/ComfyUI-Manager)
+    - ComfyUI manager 내부에서 다양한 plug-in 설치 가능.
+    - ComfyUI manager 설치 후 **manager** - **install node** - **ComfyUI's ControlNet Auxiliary Preprocessors** 설치
+    - ComfyUI refresh 혹은 종료 후 `main.py` 재실행
+- 관련 dependency는 `pyproject.toml` 참조
+    - 본 project에서는 **poetry**를 사용하여 python 의존성을 관리함.
+    - `poetry env use python` 명령어를 통해 default interpreter 사용 가능.
+    - `poetry install` 명령어를 통해 관련 dependency 설치.
+
+### Run command
+- UI 실행
+  - `python main.py`
+- 새 browser(or tab)에서 UI 실행
+  - `python main.py --windows-standalone-build`
+- localhost 말고 외부에서 IP 접근 허용
+  - `python main.py --listen`
+
+### Pre-trained Models
+ComfyUI manager의 **install Model** tab에서 다양한 model의 download link를 제공하니 참조하면 편리하며, 외부에서 download해야 하는 model은 아래에 나열.
+- [PiDiNet](https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11p_sd15_softedge.pth)
+- [SD2.1 unclip](https://huggingface.co/stabilityai/stable-diffusion-2-1-unclip/blob/main/sd21-unclip-h.ckpt)
+
+### Custom node
+`root\custom_cudes\example_node.py.example`를 참조한 custom node가 포함됨.
+- image_add_by_zae: 두 image를 입력받아 2nd image의 alpha map을 사용하여 weighted sum.
+- image_inpaint_by_zae: image와 mask를 입력받아 prompt-free inpainting. (OCR 기능 추가)
+
+### ControlNet vs T2I Adapter
+모든 iteration마다 적용되는 controlNet과 달리 T2I adapter는 단 한번만 적용되기 때문에 생성 시간을 크게 증가시키지 않음. </br>
+[Link](https://comfyanonymous.github.io/ComfyUI_examples/controlnet/#t2i-adapter-vs-controlnets)에서는 T2I adapter가 controlNet보다 효율적이라 하며 강하게 권고함. (생성된 image의 품질 평가 필요) </br>
+아래는 각 방법의 적용 예시를 나타낸 것으로, 각 png 파일을 workflow처럼 load할 수 있음. (PNG info에 json형식으로 workflow 저장)
+
+| T2I Adapter                                                                                | ControlNet  |
+|--------------------------------------------------------------------------------------------|--------------|
+| ![asd](https://comfyanonymous.github.io/ComfyUI_examples/controlnet/depth_t2i_adapter.png) | ![asd](https://comfyanonymous.github.io/ComfyUI_examples/controlnet/depth_controlnet.png)|
+
+ContolNet에서 **diff model loader** node를 사용한 점을 제외하면 두 workflow는 동일. 
+
 ComfyUI
 =======
-The most powerful and modular stable diffusion GUI and backend.
+A powerful and modular stable diffusion GUI and backend.
 -----------
 ![ComfyUI Screenshot](comfyui_screenshot.png)
 
@@ -46,7 +88,6 @@ Workflow examples can be found on the [Examples page](https://comfyanonymous.git
 | Ctrl + S                  | Save workflow                                                                                                      |
 | Ctrl + O                  | Load workflow                                                                                                      |
 | Ctrl + A                  | Select all nodes                                                                                                   |
-| Alt + C                   | Collapse/uncollapse selected nodes                                                                                 |
 | Ctrl + M                  | Mute/unmute selected nodes                                                                                         |
 | Ctrl + B                  | Bypass selected nodes (acts like the node was removed from the graph and the wires reconnected through)            |
 | Delete/Backspace          | Delete selected nodes                                                                                              |
@@ -70,7 +111,7 @@ Ctrl can also be replaced with Cmd instead for macOS users
 
 There is a portable standalone build for Windows that should work for running on Nvidia GPUs or for running on your CPU only on the [releases page](https://github.com/comfyanonymous/ComfyUI/releases).
 
-### [Direct link to download](https://github.com/comfyanonymous/ComfyUI/releases/download/latest/ComfyUI_windows_portable_nvidia_cu121_or_cpu.7z)
+### [Direct link to download](https://github.com/comfyanonymous/ComfyUI/releases/download/latest/ComfyUI_windows_portable_nvidia_cu118_or_cpu.7z)
 
 Simply download, extract with [7-Zip](https://7-zip.org) and run. Make sure you put your Stable Diffusion checkpoints/models (the huge ckpt/safetensors files) in: ComfyUI\models\checkpoints
 
@@ -90,21 +131,19 @@ Put your SD checkpoints (the huge ckpt/safetensors files) in: models/checkpoints
 
 Put your VAE in: models/vae
 
-Note: pytorch does not support python 3.12 yet so make sure your python version is 3.11 or earlier.
-
 ### AMD GPUs (Linux only)
 AMD users can install rocm and pytorch with pip if you don't have it already installed, this is the command to install the stable version:
 
-```pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6```
+```pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/rocm5.4.2```
 
-This is the command to install the nightly with ROCm 5.7 that might have some performance improvements:
-```pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/rocm5.7```
+This is the command to install the nightly with ROCm 5.6 that supports the 7000 series and might have some performance improvements:
+```pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/rocm5.6```
 
 ### NVIDIA
 
-Nvidia users should install pytorch using this command:
+Nvidia users should install torch and xformers using this command:
 
-```pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu121```
+```pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118 xformers```
 
 #### Troubleshooting
 
